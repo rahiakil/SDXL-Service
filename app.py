@@ -23,6 +23,16 @@ CORS(app)
 # Initialize CUDA device if available
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
+# SSL Configuration
+DOMAIN = 'non-fungible-t-shirts.com'
+ssl_context = None
+if os.path.exists(f'/etc/letsencrypt/live/{DOMAIN}/fullchain.pem') and \
+   os.path.exists(f'/etc/letsencrypt/live/{DOMAIN}/privkey.pem'):
+    ssl_context = (
+        f'/etc/letsencrypt/live/{DOMAIN}/fullchain.pem',
+        f'/etc/letsencrypt/live/{DOMAIN}/privkey.pem'
+    )
+
 # Initialize the models
 def initialize_pipeline():
     # Load the ControlNet model
@@ -102,4 +112,8 @@ def generate_image():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5111) 
+    app.run(
+        host='0.0.0.0',
+        port=5111,
+        ssl_context=ssl_context
+    ) 
