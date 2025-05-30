@@ -4,15 +4,12 @@ from PIL import Image
 import torch
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-
-from huggingface_hub import hf_hub_download
-
 from diffusers import StableDiffusionXLControlNetPipeline, ControlNetModel, AutoencoderKL
 from diffusers.utils import load_image
 import numpy as np
 from dotenv import load_dotenv
 import os
-
+import ssl
 
 # Load environment variables
 load_dotenv()
@@ -24,15 +21,17 @@ CORS(app)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # SSL Configuration
-DOMAIN = 'non-fungible-t-shirts.com'
-ssl_context = None
 cert_path = os.path.join(os.path.dirname(__file__), 'ssl', 'cert.pem')
 key_path = os.path.join(os.path.dirname(__file__), 'ssl', 'key.pem')
 
 if os.path.exists(cert_path) and os.path.exists(key_path):
-    ssl_context = (cert_path, key_path)
+    ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    ssl_context.load_cert_chain(cert_path, key_path)
+    ssl_context.minimum_version = ssl.TLSVersion.TLSv1_2
+    ssl_context.verify_mode = ssl.CERT_OPTIONAL
 else:
     print("Warning: SSL certificates not found. Running in HTTP mode.")
+    ssl_context = None
 
 # Initialize the models
 def initialize_pipeline():
