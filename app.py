@@ -4,11 +4,15 @@ from PIL import Image
 import torch
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+
+from huggingface_hub import hf_hub_download
+
 from diffusers import StableDiffusionXLControlNetPipeline, ControlNetModel, AutoencoderKL
 from diffusers.utils import load_image
 import numpy as np
 from dotenv import load_dotenv
 import os
+
 
 # Load environment variables
 load_dotenv()
