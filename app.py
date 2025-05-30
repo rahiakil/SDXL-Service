@@ -10,6 +10,7 @@ import numpy as np
 from dotenv import load_dotenv
 import os
 from gevent.pywsgi import WSGIServer
+import ssl
 
 # Load environment variables
 load_dotenv()
@@ -23,6 +24,14 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 # SSL Configuration
 cert_path = os.path.join(os.path.dirname(__file__), 'ssl', 'cert.pem')
 key_path = os.path.join(os.path.dirname(__file__), 'ssl', 'key.pem')
+
+def create_ssl_context():
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.load_cert_chain(cert_path, key_path)
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
+    context.maximum_version = ssl.TLSVersion.TLSv1_3
+    context.set_ciphers('ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256')
+    return context
 
 # Initialize the models
 def initialize_pipeline():
@@ -104,11 +113,16 @@ def generate_image():
 
 if __name__ == '__main__':
     if os.path.exists(cert_path) and os.path.exists(key_path):
-        http_server = WSGIServer(('0.0.0.0', 5111), app,
-                               keyfile=key_path,
-                               certfile=cert_path)
-        print("Running with HTTPS on port 5111")
-        http_server.serve_forever()
+        try:
+            ssl_context = create_ssl_context()
+            http_server = WSGIServer(('0.0.0.0', 5111), app,
+                                   ssl_context=ssl_context)
+            print("Running with HTTPS on port 5111")
+            http_server.serve_forever()
+        except Exception as e:
+            print(f"Error setting up HTTPS: {e}")
+            print("Falling back to HTTP mode")
+            app.run(host='0.0.0.0', port=5111)
     else:
         print("Warning: SSL certificates not found. Running in HTTP mode.")
         app.run(host='0.0.0.0', port=5111) 
