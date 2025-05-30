@@ -9,7 +9,6 @@ from diffusers.utils import load_image
 import numpy as np
 from dotenv import load_dotenv
 import os
-from gevent.pywsgi import WSGIServer
 import ssl
 
 # Load environment variables
@@ -24,14 +23,6 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 # SSL Configuration
 cert_path = os.path.join(os.path.dirname(__file__), 'ssl', 'cert.pem')
 key_path = os.path.join(os.path.dirname(__file__), 'ssl', 'key.pem')
-
-def create_ssl_context():
-    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    context.load_cert_chain(cert_path, key_path)
-    context.minimum_version = ssl.TLSVersion.TLSv1_2
-    context.maximum_version = ssl.TLSVersion.TLSv1_3
-    context.set_ciphers('ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256')
-    return context
 
 # Initialize the models
 def initialize_pipeline():
