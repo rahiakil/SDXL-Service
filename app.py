@@ -9,7 +9,7 @@ from diffusers.utils import load_image
 import numpy as np
 from dotenv import load_dotenv
 import os
-from werkzeug.serving import WSGIServer
+from gevent.pywsgi import WSGIServer
 
 # Load environment variables
 load_dotenv()
@@ -105,8 +105,8 @@ def generate_image():
 if __name__ == '__main__':
     if os.path.exists(cert_path) and os.path.exists(key_path):
         http_server = WSGIServer(('0.0.0.0', 5111), app,
-                               certfile=cert_path,
-                               keyfile=key_path)
+                               keyfile=key_path,
+                               certfile=cert_path)
         print("Running with HTTPS on port 5111")
         http_server.serve_forever()
     else:
