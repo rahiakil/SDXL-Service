@@ -26,12 +26,13 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 # SSL Configuration
 DOMAIN = 'non-fungible-t-shirts.com'
 ssl_context = None
-if os.path.exists(f'/etc/letsencrypt/live/{DOMAIN}/fullchain.pem') and \
-   os.path.exists(f'/etc/letsencrypt/live/{DOMAIN}/privkey.pem'):
-    ssl_context = (
-        f'/etc/letsencrypt/live/{DOMAIN}/fullchain.pem',
-        f'/etc/letsencrypt/live/{DOMAIN}/privkey.pem'
-    )
+cert_path = os.path.join(os.path.dirname(__file__), 'ssl', 'cert.pem')
+key_path = os.path.join(os.path.dirname(__file__), 'ssl', 'key.pem')
+
+if os.path.exists(cert_path) and os.path.exists(key_path):
+    ssl_context = (cert_path, key_path)
+else:
+    print("Warning: SSL certificates not found. Running in HTTP mode.")
 
 # Initialize the models
 def initialize_pipeline():

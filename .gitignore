@@ -1,6 +1,9 @@
 # Environment variables
 .env
 
+# SSL certificates
+ssl/
+
 # Python
 __pycache__/
 *.py[cod]
